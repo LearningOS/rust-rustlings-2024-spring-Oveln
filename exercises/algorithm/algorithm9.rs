@@ -1,8 +1,7 @@
 /*
-	heap
-	This question requires you to implement a binary heap function
+    heap
+    This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -23,7 +22,7 @@ where
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
             count: 0,
-            items: vec![T::default()],
+            items: vec![],
             comparator,
         }
     }
@@ -38,6 +37,16 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.items.push(value);
+        self.count += 1;
+        let mut now = self.count;
+        let mut parent = self.parent_idx(now);
+        while now != 1 && !(self.comparator)(&self.items[parent - 1], &self.items[now - 1]) {
+            // swap(&mut self.items[self.parent_idx(now)], &mut self.items[now]);
+            self.items.swap(parent - 1, now - 1);
+            now = parent;
+            parent = self.parent_idx(now);
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,7 +67,20 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+        if !self.children_present(idx) {
+            return usize::MAX;
+        }
+        let items = &self.items;
+        let l = self.left_child_idx(idx);
+        let r = self.right_child_idx(idx);
+        if r > self.len() {
+            return l;
+        }
+        if (self.comparator)(&items[l - 1], &items[r - 1]) {
+            l
+        } else {
+            r
+        }
     }
 }
 
@@ -84,8 +106,28 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.len() == 0 {
+            return None;
+        }
+        let last = self.items.len() - 1;
+        self.items.swap(0, last);
+        self.count -= 1;
+        let mut now = 1;
+        let mut small_child = self.smallest_child_idx(now);
+        while self.children_present(now) {
+            // swap(
+            //     self.items.get_mut(now).unwrap(),
+            //     self.items.get_mut(self.smallest_child_idx(now)).unwrap(),
+            // );
+            if !(self.comparator)(&self.items[now - 1], &self.items[small_child - 1]) {
+                self.items.swap(now - 1, small_child - 1);
+                now = small_child;
+                small_child = self.smallest_child_idx(now);
+            } else {
+                break;
+            }
+        }
+        self.items.pop()
     }
 }
 
